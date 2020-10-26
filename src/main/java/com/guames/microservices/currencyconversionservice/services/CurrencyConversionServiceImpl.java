@@ -3,6 +3,8 @@ package com.guames.microservices.currencyconversionservice.services;
 import com.guames.microservices.currencyconversionservice.exceptions.NotFoundException;
 import com.guames.microservices.currencyconversionservice.protocols.CurrencyConversionResponse;
 import com.guames.microservices.currencyconversionservice.protocols.ExchangeValueResponse;
+import com.guames.microservices.currencyconversionservice.proxy.CurrencyExchangeServiceProxy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,16 +17,19 @@ import java.util.Optional;
 @Service
 public class CurrencyConversionServiceImpl implements CurrencyConversionService {
 
+    @Autowired
+    private CurrencyExchangeServiceProxy currencyExchangeServiceProxy;
     private final String FROM = "from";
     private final String TO = "to";
     private final String CONVERSION_URI = "http://localhost:8082/currency-exchange/" + FROM + "/{" + FROM + "}/" + TO + "/{" + TO + "}";
 
-
     @Override
     public CurrencyConversionResponse convertCurrency(String from, String to, BigDecimal quantity) throws NotFoundException {
-        Map<String, String> uriVariables = getConvertCurrencyRequestMap(from, to);
-        ResponseEntity<ExchangeValueResponse> responseResponseEntity = getExchangeValueResponseFromCurrencyExchangeService(uriVariables);
-        Optional<ExchangeValueResponse> exchangeValueResponse = Optional.of(responseResponseEntity.getBody());
+//        Using rest template to communicate with microservices
+//        Map<String, String> uriVariables = getConvertCurrencyRequestMap(from, to);
+//        ResponseEntity<ExchangeValueResponse> responseResponseEntity = getExchangeValueResponseFromCurrencyExchangeService(uriVariables);
+//        Optional<ExchangeValueResponse> exchangeValueResponse = Optional.of(responseResponseEntity.getBody());
+        Optional<ExchangeValueResponse> exchangeValueResponse = Optional.of(currencyExchangeServiceProxy.retrieveExchangeValue(from,to));
         return CurrencyConversionResponse.of(exchangeValueResponse);
     }
 
